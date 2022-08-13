@@ -1,6 +1,7 @@
 # market_ind
 
 `python indicator.py`
+
 参考main中的使用方法：
 
 输入：两个前置自动生成的字典、待查询的股票代码、待查询的日期
