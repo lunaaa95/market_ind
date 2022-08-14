@@ -1,5 +1,4 @@
 __pycache__
-/data
 .nfs*
-/raw_data
+/data
 walk*
