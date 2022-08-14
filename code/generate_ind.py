@@ -26,13 +26,7 @@ class Market_dataset():
         return self.market[idx: idx + window_sz], self.market[idx + window_sz].reshape(1, -1), self.date[idx + window_sz - 1]
 
 def prepare_data(part_n_id, path):
-    date = np.load('../data/raw_data/stock_date.npy', allow_pickle=True)
-    date = [i for i in set(date.squeeze())]
-    date.sort()
-    date = np.array(date)
-
     market = np.load(path, allow_pickle=True)
-
     train_dataset = Market_dataset(market[:1020, part_n_id], date[:1020]) # item: ((30, 256), (256,))
     val_dataset = Market_dataset(market[1020:, part_n_id], date[1020:])
     all_dataset = Market_dataset(market[:, part_n_id], date)
