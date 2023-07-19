@@ -2,24 +2,26 @@ from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import load_pkl
+from code.utils import load_pkl
 from sklearn.metrics.pairwise import cosine_similarity
 import ipdb
 
-with open('data/embeddings.file', 'r') as f:
-    content = f.readlines()
+code_2_embedding = np.load('./data/market/code_2_embedding.npy', allow_pickle=True).item()
+names = np.array(list(code_2_embedding.keys()))
+embeddings = np.array(list(code_2_embedding.values()))
 
-content = np.array([item.strip().split(' ') for item in content][1:])
-names = content[:,0].astype(np.unicode_) # n,
-embeddings = content[:,1:].astype(np.float32) # n, dim
+#query_i = 1000
+#query_code = names[query_i]
+query_code = '002046.SZ'
+query_embedding = code_2_embedding[query_code].reshape(1, -1)
 
-query_idx = 300
-print(names[query_idx])
-query_embedding = embeddings[query_idx].reshape(1, -1)
+print("query code is", query_code)
+
 cos_sim = cosine_similarity(query_embedding, embeddings).squeeze() # (4724,)
-sim_idx = names[np.squeeze(np.argsort(-cos_sim))[:5]]
-print(sim_idx)
+sim_idx = names[np.squeeze(np.argsort(-cos_sim))[:10]]
+print('top 5 similar code are:', sim_idx)
 
+# test 下来002046和军工、风能有关，输出了前10个最相关的，看了一下概念，确实比较相关
     
 
 '''

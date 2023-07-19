@@ -10,7 +10,7 @@ from tqdm import tqdm, trange
 
 SEED = 0
 window_sz = 30
-device = "cuda:3"
+device = "cuda:0"
 
 class Market_dataset():
     def __init__(self, market, date):
@@ -26,7 +26,7 @@ class Market_dataset():
         return self.market[idx: idx + window_sz], self.market[idx + window_sz].reshape(1, -1), self.date[idx + window_sz - 1]
 
 def prepare_data(part_n_id, path):
-    date = np.load('../data/raw_data/stock_date.npy', allow_pickle=True)
+    date = np.load('./data/raw_data/stock_date.npy', allow_pickle=True)
     date = [i for i in set(date.squeeze())]
     date.sort()
     date = np.array(date)
@@ -63,10 +63,10 @@ def train_model(train_dataloader, val_dataloader, all_dataloader, n_dim, path):
 
 def generate_date_2_market(ind_name): # ind_name: market 或 style_market 分别表示概念市场因子和风格市场因子
     if ind_name == 'market':
-        path = '../data/market/market_2side.npy'
+        path = './data/market/market_2side.npy'
         n_dim = 256
     elif ind_name == 'style_market':
-        path = '../data/market/style_2side.npy'
+        path = './data/market/style_2side.npy'
         n_dim = 6
     else:
         raise ValueError("生成啥因子你说清楚谢谢. choose 'market' or 'style_market'")
@@ -76,15 +76,16 @@ def generate_date_2_market(ind_name): # ind_name: market 或 style_market 分别
     ret = []
     for i in range(part_n):
         train_dataloader, val_dataloader, all_dataloader = prepare_data(i, path)
-        train_model(train_dataloader, val_dataloader, all_dataloader, n_dim, '../data/model_' + ind_name + str(i) + '.pt')
+        train_model(train_dataloader, val_dataloader, all_dataloader, n_dim, './data/model_' + ind_name + str(i) + '.pt')
         model = Gru_model(input_size=n_dim, hidden_size=n_dim).to(device)
-        model.load_state_dict(torch.load('../data/model_' + ind_name + str(i) + '.pt'))
+        model.load_state_dict(torch.load('./data/model_' + ind_name + str(i) + '.pt'))
         date_2_market = pred(model, all_dataloader, device)
         print('{}: successfully generate date_2_{}{} dict'.format(ind_name, ind_name, i))
-        np.save('../data/market/date_2_' + ind_name + str(i) + '.npy', date_2_market)
+        np.save('./data/market/date_2_' + ind_name + str(i) + '.npy', date_2_market)
         print('dict saved.')
         ret.append(date_2_market)
     return ret
 
 if __name__ == '__main__':
-    dic1, dic2 = generate_date_2_market('market')
+    # dic1, dic2 = generate_date_2_market('market')
+    pass
