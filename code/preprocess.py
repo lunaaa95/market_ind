@@ -12,8 +12,6 @@ from code.generate_adjlist import generate_adjlist
 from code.deepwalk.run import process
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gene_market', type=bool, default=False, help="If True, regenerate market2side.npy to data/market")
-parser.add_argument('--gene_style', type=bool, default=False, help="If True, regenerate style2side.npy to data/market")
 parser.add_argument('--gene_concept', type=bool, default=False, help="If True, regenerate stock_2_concept.npy to data/market")
 args = parser.parse_args()
 
@@ -147,75 +145,63 @@ def preprocess():
     # 生成 market 数据
     ## 获取 code_2_embedding字典
     dic_path1 = indicator_path + '/code_2_embedding.npy'
-    if os.path.exists(dic_path1):
-        code_2_embedding = np.load(dic_path1, allow_pickle=True).item()
-    else:
-        ## 此处缺少个embedding文件没有跑通
-        print('generating file:', indicator_path + '/code_2_embedding.npy')
-        code_2_embedding = code_2_embedding_f(base_path + '/embeddings.txt', idx_2_code, indicator_path + '/code_2_embedding.npy')
+    print('generating file:', indicator_path + '/code_2_embedding.npy')
+    code_2_embedding = code_2_embedding_f(base_path + '/embeddings.txt', idx_2_code, indicator_path + '/code_2_embedding.npy')
 
     ## 生成 market 数据
-    if (not args.gene_market) and os.path.exists(indicator_path + '/market_2side.npy'):
-        print('market_2side.npy already exist.')
-        pass
-    else:
-        print("--------重新生成 market_2side.npy---------")
-        market = np.zeros((len(uniq_date), part_n, 256))
-        day_idx = 0
-        k = 300
-        for day in tqdm(uniq_date):
-            temp_df = df[df['date'] == day]
-            temp_df = temp_df.sort_values(by=['value'], ascending=False)
-            market_codes = np.array([temp_df['code'][:k],
-                temp_df['code'][-k:]])
-            temp = np.zeros((part_n, 256))
-            for i in range(part_n):
-                emb = np.zeros((256))
-                for j in range(len(market_codes[i])):
-                    emb += code_2_embedding[market_codes[i,j]]
-                temp[i] = emb
-            market[day_idx] = temp
-            day_idx += 1
+    print("--------重新生成 market_2side.npy---------")
+    market = np.zeros((len(uniq_date), part_n, 256))
+    day_idx = 0
+    k = 300
+    for day in tqdm(uniq_date):
+        temp_df = df[df['date'] == day]
+        temp_df = temp_df.sort_values(by=['value'], ascending=False)
+        market_codes = np.array([temp_df['code'][:k],
+            temp_df['code'][-k:]])
+        temp = np.zeros((part_n, 256))
+        for i in range(part_n):
+            emb = np.zeros((256))
+            for j in range(len(market_codes[i])):
+                emb += code_2_embedding[market_codes[i,j]]
+            temp[i] = emb
+        market[day_idx] = temp
+        day_idx += 1
 
-        np.save(indicator_path + '/market_2side.npy', market)
-        print("saved")
+    np.save(indicator_path + '/market_2side.npy', market)
+    print("saved")
 
 
     #  生成style 数据
-    if (not args.gene_style) and os.path.exists(indicator_path + '/stock_2_style.npy'):
-        print('stock_2_style.npy already exist.')
-        pass
-    else:
-        idx_2_style = dict(zip(range(style.shape[0]), style))
-        stock_style_dict = {}
-        print('--------重新生成 stock_2_style.npy ---------')
-        for index, row in tqdm(df.iterrows(), total=df.shape[0]):
-            k = row['code'] + '-' + row['date']
-            stock_style_dict[k] = idx_2_style[index]
-        np.save(indicator_path + '/stock_2_style.npy', stock_style_dict) 
-        print('saved')
+    idx_2_style = dict(zip(range(style.shape[0]), style))
+    stock_style_dict = {}
+    print('--------重新生成 stock_2_style.npy ---------')
+    for index, row in tqdm(df.iterrows(), total=df.shape[0]):
+        k = row['code'] + '-' + row['date']
+        stock_style_dict[k] = idx_2_style[index]
+    np.save(indicator_path + '/stock_2_style.npy', stock_style_dict) 
+    print('saved')
 
-        df['idx'] = range(style.shape[0])
-        print("--------重新生成 style_2side.npy ---------")
-        style_market = np.zeros((len(uniq_date), part_n, 6))
-        day_idx = 0
-        k = 300
-        for day in tqdm(uniq_date):
-            temp_df = df[df['date'] == day]
-            temp_df = temp_df.sort_values(by=['value'], ascending=False)
-            idxs = np.array([temp_df['idx'][:k],
-                temp_df['idx'][-k:]])
-            temp = np.zeros((part_n, 6))
-            for i in range(part_n):
-                emb = np.zeros((6))
-                for j in range(len(idxs[i])):
-                    emb += idx_2_style[idxs[i,j]]
-                temp[i] = emb
-            style_market[day_idx] = temp
-            day_idx += 1
+    df['idx'] = range(style.shape[0])
+    print("--------重新生成 style_2side.npy ---------")
+    style_market = np.zeros((len(uniq_date), part_n, 6))
+    day_idx = 0
+    k = 300
+    for day in tqdm(uniq_date):
+        temp_df = df[df['date'] == day]
+        temp_df = temp_df.sort_values(by=['value'], ascending=False)
+        idxs = np.array([temp_df['idx'][:k],
+            temp_df['idx'][-k:]])
+        temp = np.zeros((part_n, 6))
+        for i in range(part_n):
+            emb = np.zeros((6))
+            for j in range(len(idxs[i])):
+                emb += idx_2_style[idxs[i,j]]
+            temp[i] = emb
+        style_market[day_idx] = temp
+        day_idx += 1
 
-        np.save(indicator_path + '/style_2side.npy', style_market)
-        print("saved")
+    np.save(indicator_path + '/style_2side.npy', style_market)
+    print("saved")
 
     #  生成concept 数据
     if (not args.gene_concept) and os.path.exists(indicator_path + 'stock_2_concept.npy'):

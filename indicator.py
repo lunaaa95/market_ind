@@ -18,7 +18,6 @@ def market_indicator(code_2_embedding, date_2_market, stock_code, date):
 def style_indicator(code_2_embedding, date_2_market, stock_code, date):
     embedding = code_2_embedding[stock_code + '-' + date] # array
     market = date_2_market[date] # array
-    ipdb.set_trace()
     cos_sim = embedding.dot(market) / (np.linalg.norm(embedding) * np.linalg.norm(market))
     return cos_sim
 
@@ -41,9 +40,9 @@ def load_dicts(ind_name):
     return code_2_embedding, date_2_market0, date_2_market1
     
 if __name__ == '__main__':
-    # mode = 'train'
-    query_day = '2023-01-28'
-    mode = 'update'
+    mode = 'train'
+    query_day = '2021-01-28'
+    #mode = 'update'
     if mode == 'train':
         # prepare dicts.
         print('>???>?')
@@ -54,7 +53,7 @@ if __name__ == '__main__':
     elif mode == 'update':
         # 四个字典update
         keys = ['code', 'date', 'value', 'observation', 'style']
-        values = [np.array(['002212.SZ']), np.array(['2023-01-28']), np.array([2.9]), np.array([np.array([1 for i in range(64)])]), np.array([np.array([1 for i in range(160)])])]
+        values = [np.array(['002212.SZ']), np.array(['2021-01-28']), np.array([2.9]), np.array([np.array([1 for i in range(64)])]), np.array([np.array([1 for i in range(160)])])]
         new_data = dict(zip(keys, values))
         update_date_2_market(new_data, query_day, ind_name='market')
         new_data = dict(zip(keys, values))
