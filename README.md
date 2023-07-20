@@ -15,6 +15,7 @@
 
 其中，style_list记录了style文件从第0列到第-1列按顺序的column名（在读数据库时都可以直接获取）
 
+## 二、休息一下喝杯茶
 
 ## 三、 参考indicator中的语句来获取indicators：
 `cd ..`
