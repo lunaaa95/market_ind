@@ -20,6 +20,9 @@
 `cd ..`
 
 `python indicator.py`
+
 如果文件中 mode == "train", 则会进行deepwalk、LSTM等模型重新训练；
+
 如果文件中 mode == "update", 则不进行deepwalk，采用训好的模型进行测试；
+
 update时，请按文件中样本形式输入当日的新数据，无需再次输入历史数据。
