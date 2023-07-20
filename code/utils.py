@@ -28,11 +28,11 @@ class Dataset():
         return len(self.code)
 
 def save_pkl(obj, filename):
-    with open('../data/mi' + filename, 'wb') as f:
+    with open('./data/mi' + filename, 'wb') as f:
         pickle.dump(obj, f)
 
 def load_pkl(filename):
-    with open('../data/mi' + filename, 'rb') as f:
+    with open('./data/mi' + filename, 'rb') as f:
         ret = pickle.load(f)
     return ret
 
@@ -58,12 +58,12 @@ def code_2_embedding_f(emb_path, idx_2_code, code_2_emb_path):
 def walk_2_walkn():
     idx_2_code = load_pkl("idx_2_code.pkl")
 
-    with open('../data/raw_data/concept_list.pkl', 'rb') as f:
+    with open('./data/raw_data/concept_list.pkl', 'rb') as f:
         concept_list = pickle.load(f)
     keys = [i + len(idx_2_code) for i in range(len(concept_list))]
     idx_2_code.update(dict(zip(keys, concept_list)))
 
-    with open('../data/stock/walks.txt', 'r') as f:
+    with open('./data/stock/walks.txt', 'r') as f:
         walks = [i.strip().split(" ") for i in f.readlines()]
     walks_n = []
     for walk in walks:
@@ -78,6 +78,6 @@ def walk_2_walkn():
         walks_n.append((" ".join(temp)) + '\n')
 
 
-    with open('../data/stock/walk_n.txt', 'w') as f:
+    with open('./data/stock/walk_n.txt', 'w') as f:
         f.writelines(walks_n)
     print('walks with names are written')

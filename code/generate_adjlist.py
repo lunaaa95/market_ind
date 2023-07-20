@@ -1,8 +1,8 @@
 import numpy as np
 import ipdb
 from tqdm import tqdm
-from utils import save_pkl
-from utils import Dataset
+from code.utils import save_pkl
+from code.utils import Dataset
 
 
 def generate_adjlist(all_data, save_path):

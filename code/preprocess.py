@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from utils import save_pkl, load_pkl, Dataset, code_2_embedding_f
+from code.utils import save_pkl, load_pkl, Dataset, code_2_embedding_f
 from pathlib import Path
 from tqdm import trange, tqdm
 import ipdb
@@ -8,8 +8,8 @@ from tqdm import tqdm
 import pandas as pd
 import os
 import argparse
-from generate_adjlist import generate_adjlist
-from deepwalk.run import process
+from code.generate_adjlist import generate_adjlist
+from code.deepwalk.run import process
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gene_market', type=bool, default=False, help="If True, regenerate market2side.npy to data/market")
@@ -50,10 +50,58 @@ def load_style(style_path, all_data):
         style[:, i] = np.sum(temp[:, i * 5: (i + 1) * 5], axis=1)
     return style
 
+def update_market_file(new_data, date, market_file_path, part_n=2, k=300):
+    # new_data:df:3col: 'date', 'value', 'code'
+    new_data.pop('style')
+    new_data.pop('observation')
+    new_data = pd.DataFrame(new_data)
+    code_2_embedding = np.load('./data/market/code_2_embedding.npy', allow_pickle=True).item()
+    temp_df = new_data[new_data['date'] == date]
+    temp_df = temp_df.sort_values(by=['value'], ascending=False)
+    market_codes = np.array([temp_df['code'][:k], temp_df['code'][-k:]])
+    temp = np.zeros((part_n, 256))
+    for i in range(part_n):
+        emb = np.zeros((256))
+        for j in range(len(market_codes[i])):
+            emb += code_2_embedding[market_codes[i,j]]
+        temp[i] = emb 
+    market = np.load(market_file_path)
+    market = np.r_[market, np.expand_dims(temp, axis=0)]
+    np.save(market_file_path, market)
+    print('-------------', market_file_path, 'update!-------')
 
-def main():
+def update_style_file(new_data, date, style_file_path, part_n=2, k=300):
+# new_data:df: all_data 形式的输入
+# style_fule_path: './data/market/stock_2_side.npy'
+    
+    stock_2_style = np.load('./data/market/stock_2_style.npy', allow_pickle=True).item() # (4274234个key，每个key对应(6,) array
+    style = load_style('./data/raw_data/style_list.pkl', new_data)
+    new_data.pop('style')
+    new_data.pop('observation')
+    new_data['idx'] = [i for i in range(style.shape[0])]
+    new_data = pd.DataFrame(new_data)
+    idx_2_style = dict(zip(range(style.shape[0]), style))
+    for index, row in new_data.iterrows():
+        k = row['code'] + '-' + row['date']
+        stock_2_style[k] = idx_2_style[index]
+    np.save('./data/market/stock_2_style.npy', stock_2_style) 
 
-    base_path = '../data'
+    style_2side = np.load(style_file_path) # (1211,2,6)
+    day_idx = len(style_2side)
+    temp_df = new_data[new_data['date'] == date]
+    temp_df = temp_df.sort_values(by=['value'], ascending=False)
+    idxs = np.array([temp_df['idx'][:300], temp_df['idx'][-300:]])
+    temp = np.zeros((part_n, 6))
+    for i in range(part_n):
+        emb = np.zeros((6))
+        for j in range(len(idxs[i])):
+            emb += idx_2_style[idxs[i,j]]
+        temp[i] = emb
+    style_2side = np.r_[style_2side, np.expand_dims(temp, axis=0)]
+    np.save('./data/market/style_2side.npy', style_2side)
+
+def preprocess():
+    base_path = './data'
     raw_data_path = base_path + '/raw_data'
     indicator_path = base_path + '/market'
 
@@ -183,7 +231,7 @@ def main():
         np.save(indicator_path + 'stock_2_concept.npy', stock_concept_dict) 
         print('saved')
 if __name__ == '__main__':
-    main()
+    preprocess()
 
 
 '''

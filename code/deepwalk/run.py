@@ -10,10 +10,10 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 import logging
 
-from deepwalk import graph
-from deepwalk import walks as serialized_walks
+from code.deepwalk import graph
+from code.deepwalk import walks as serialized_walks
 from gensim.models import Word2Vec, KeyedVectors
-from deepwalk.skipgram import Skipgram
+from code.deepwalk.skipgram import Skipgram
 
 from six import text_type as unicode
 from six import iteritems
@@ -23,7 +23,7 @@ import psutil
 from multiprocessing import cpu_count
 
 import networkx as nx
-from deepwalk import weighted_random_walk
+from code.deepwalk import weighted_random_walk
 
 p = psutil.Process(os.getpid())
 p.cpu_affinity(list(range(cpu_count())))

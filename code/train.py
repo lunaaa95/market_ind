@@ -31,13 +31,13 @@ def val(model, eval_dataloader, epoch, device):
         loss += batch_loss.item()
     return loss/batch_num
 
-def pred(model, all_dataloader, device):
+def pred(model, test_dataloader, device):
     model.eval()
-    batch_num = len(all_dataloader)
+    batch_num = len(test_dataloader)
     date_2_market = dict()
-    for batch in all_dataloader:
+    for batch in test_dataloader:
         x = batch[0].to(device)
-        date = batch[2]
+        date = batch[1]
         pred = model(x).to('cpu').detach().numpy().squeeze(0)
         date_2_market.update(dict(zip(date, pred)))
     return date_2_market
